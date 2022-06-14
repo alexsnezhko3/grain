@@ -6,7 +6,6 @@ type wferr =
   | MalformedString(Location.t)
   | IllegalCharacterLiteral(string, Location.t)
   | MultipleModuleName(Location.t)
-  | TypeNameShouldBeUppercase(string, Location.t)
   | IllegalAliasName(string, Location.t)
   | ExternalAlias(string, Location.t)
   | ModuleNameShouldBeUppercase(string, Location.t)
@@ -38,8 +37,6 @@ let prepare_error =
         )
       | MultipleModuleName(loc) =>
         errorf(~loc, "Multiple modules in identifier")
-      | TypeNameShouldBeUppercase(name, loc) =>
-        errorf(~loc, "Type '%s' should have an uppercase name.", name)
       | IllegalAliasName(name, loc) =>
         errorf(~loc, "Alias '%s' should have proper casing.", name)
       | ExternalAlias(name, loc) =>
@@ -173,26 +170,6 @@ let malformed_identifiers = (errs, super) => {
     super.import(self, import);
   };
   let iterator = {...super, expr: iter_expr, import: iter_import};
-  {errs, iterator};
-};
-
-let types_have_correct_case = (errs, super) => {
-  let check_uppercase = (loc, s) => {
-    let first_char = s.[0];
-    if (!Char_utils.is_uppercase_letter(first_char)) {
-      errs := [TypeNameShouldBeUppercase(s, loc), ...errs^];
-    };
-  };
-  let iter_data =
-      (
-        self,
-        {pdata_name: {loc: name_loc, txt: name}, pdata_loc: loc, _} as d,
-      ) => {
-    check_uppercase(name_loc, name);
-    super.data(self, d);
-  };
-  /* FIXME: The parser should read in uppercase types as PTyConstr instances */
-  let iterator = {...super, data: iter_data};
   {errs, iterator};
 };
 
@@ -510,7 +487,6 @@ let well_formedness_checks = [
   malformed_strings,
   malformed_characters,
   malformed_identifiers,
-  types_have_correct_case,
   modules_have_correct_case,
   module_imports_not_external,
   only_has_one_export_all,

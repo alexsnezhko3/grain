@@ -52,6 +52,45 @@ type sugared_pattern_item =
   | RegularPattern(Parsetree.pattern)
   | SpreadPattern(Parsetree.pattern);
 
+let utf8_sub = (str, startc, endc) => {
+  // Utf8.countInString is busted, so unfortunately we have to decode the
+  // entire string
+  let decoded = Utf8.decodeUtf8String(str);
+  if (String.length(str) == List.length(decoded)) {
+    String.sub(str, startc, endc);
+  } else {
+    let chars =
+      List.filteri((i, char) => i >= startc && i < startc + endc, decoded);
+    let buf = Buffer.create(128);
+    List.iter(
+      uchar => {
+        Buffer.add_utf_8_uchar(buf, Uchar.of_int(Utf8__Uchar.toInt(uchar)))
+      },
+      chars,
+    );
+    Buffer.contents(buf);
+  };
+};
+
+let utf8_string_after = (str, startc) => {
+  // Utf8.countInString is busted, so unfortunately we have to decode the
+  // entire string
+  let decoded = Utf8.decodeUtf8String(str);
+  if (String.length(str) == List.length(decoded)) {
+    Str.string_after(str, startc);
+  } else {
+    let chars = List.filteri((i, char) => i >= startc, decoded);
+    let buf = Buffer.create(128);
+    List.iter(
+      uchar => {
+        Buffer.add_utf_8_uchar(buf, Uchar.of_int(Utf8__Uchar.toInt(uchar)))
+      },
+      chars,
+    );
+    Buffer.contents(buf);
+  };
+};
+
 let get_original_code = (location: Location.t, source: array(string)) => {
   let (_, start_line, startc, _) =
     Locations.get_raw_pos_info(location.loc_start);
@@ -59,14 +98,14 @@ let get_original_code = (location: Location.t, source: array(string)) => {
 
   if (Array.length(source) > end_line - 1) {
     if (start_line == end_line) {
-      String.sub(source[start_line - 1], startc, endc - startc);
+      utf8_sub(source[start_line - 1], startc, endc - startc);
     } else {
       let text = ref("");
       for (line in start_line - 1 to end_line - 1) {
         if (line + 1 == start_line) {
-          text := text^ ++ Str.string_after(source[line], startc) ++ "\n";
+          text := text^ ++ utf8_string_after(source[line], startc) ++ "\n";
         } else if (line + 1 == end_line) {
-          text := text^ ++ String.sub(source[line], 0, endc);
+          text := text^ ++ utf8_sub(source[line], 0, endc);
         } else {
           text := text^ ++ source[line] ++ "\n";
         };
