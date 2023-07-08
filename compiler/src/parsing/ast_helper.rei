@@ -127,12 +127,13 @@ module DataDeclaration: {
 };
 
 module Exception: {
-  let mk: (~loc: loc=?, str, constructor_arguments) => type_exception;
+  let mk: (~loc: loc=?, str, extension_constructor_kind) => type_exception;
   let singleton: (~loc: loc=?, str) => type_exception;
   let tuple:
     (~loc: loc=?, str, location(list(parsed_type))) => type_exception;
   let record:
     (~loc: loc=?, str, location(list(label_declaration))) => type_exception;
+  let rebind: (~loc: loc, str, location(Identifier.t)) => type_exception;
 };
 
 module Pattern: {

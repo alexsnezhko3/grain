@@ -922,6 +922,7 @@ let transl_extension_constructor =
       List.iter(
         fun
         | {desc: TTyVar(Some("_"))} as ty =>
+          // TODO mem?
           if (List.memq(ty, vars)) {
             ty.desc = TTyVar(None);
           }
@@ -963,6 +964,7 @@ let transl_extension_constructor =
         | _ => assert(false)
         };
 
+      // TODO add back inlined rec?
       let args = Types.TConstrTuple(args);
 
       (args, TExtRebind(path, lid));

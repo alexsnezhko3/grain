@@ -163,11 +163,11 @@ module DataDeclaration = {
 module Exception = {
   let mk = (~loc=?, n, t) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
-    let ext = {pext_name: n, pext_kind: PExtDecl(t), pext_loc: loc};
+    let ext = {pext_name: n, pext_kind: t, pext_loc: loc};
     {ptyexn_constructor: ext, ptyexn_loc: loc};
   };
-  let singleton = (~loc=?, n) => mk(~loc?, n, PConstrSingleton);
-  let tuple = (~loc=?, n, args) => mk(~loc?, n, PConstrTuple(args));
+  let singleton = (~loc=?, n) => mk(~loc?, n, PExtDecl(PConstrSingleton));
+  let tuple = (~loc=?, n, args) => mk(~loc?, n, PExtDecl(PConstrTuple(args)));
   let record = (~loc=?, n, args) => {
     List.iter(
       ld =>
@@ -181,8 +181,9 @@ module Exception = {
         },
       args.txt,
     );
-    mk(~loc?, n, PConstrRecord(args));
+    mk(~loc?, n, PExtDecl(PConstrRecord(args)));
   };
+  let rebind = (~loc, n, orig) => mk(~loc, n, PExtRebind(orig));
 };
 
 module Pattern = {

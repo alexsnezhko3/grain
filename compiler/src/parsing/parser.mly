@@ -692,6 +692,7 @@ exception_stmt:
   | EXCEPTION type_id_str { Exception.singleton ~loc:(to_loc $loc) $2 }
   | EXCEPTION type_id_str lparen typs? rparen { Exception.tuple ~loc:(to_loc $loc) $2 (Location.mkloc (Option.value ~default:[] $4) (to_loc $loc($4))) }
   | EXCEPTION type_id_str data_record_body { Exception.record ~loc:(to_loc $loc) $2 (Location.mkloc $3 (to_loc $loc($3))) }
+  | EXCEPTION type_id_str equal qualified_uid { Exception.rebind ~loc:(to_loc $loc) $2 $4 }
 
 module_stmt:
   | MODULE UIDENT lbrace toplevel_stmts RBRACE { ModuleDeclaration.mk ~loc:(to_loc $loc) (mkstr $loc($2) $2) $4 }
